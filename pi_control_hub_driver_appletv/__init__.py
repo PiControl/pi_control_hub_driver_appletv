@@ -17,9 +17,3 @@
 __version__ = '0.1.0'
 __author__ = 'Thomas Bonk'
 __author_email__ = 'thomas@meandmymac.de'
-
-from pi_control_hub_driver_appletv.appletv_device_driver_descriptor import AppleTvDeviceDriverDescriptor
-
-
-def get_driver_descriptor() -> object:
-    return AppleTvDeviceDriverDescriptor()

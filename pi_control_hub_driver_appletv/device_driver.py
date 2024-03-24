@@ -16,24 +16,21 @@
 
 from typing import List, Tuple
 from uuid import UUID
-from pi_control_hub_driver_api.device_driver import DeviceDriver
-from pi_control_hub_driver_api.device_driver_descriptor import AuthenticationMethod, DeviceDriverDescriptor
-from pi_control_hub_driver_api.device_info import DeviceInfo
+from pi_control_hub_driver_api import DeviceInfo, AuthenticationMethod, DeviceDriver, DeviceDriverDescriptor
+
 from . import __version__
 
-
-__DRIVER_ID: UUID = UUID("9a5785fd-69c9-426b-85e0-c860498757bb")
-__DISPLAY_NAME: str = "AppleTV"
-__DESCRIPTION: str = "PiControl Hub driver for AppleTVs"
 
 class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
     """Apple TV device driver descriptor"""
 
-    _alias_ = __DISPLAY_NAME
-    _version_ = __version__
-
     def __init__(self):
-        DeviceDriverDescriptor.__init__(self, __DRIVER_ID, __DISPLAY_NAME, __DESCRIPTION)
+        DeviceDriverDescriptor.__init__(
+            self,
+            UUID("9a5785fd-69c9-426b-85e0-c860498757bb"), # driver id
+            "AppleTV",                                    # display name
+            "PiControl Hub driver for AppleTVs",          # description
+        )
 
     def get_devices(self) -> List[DeviceInfo]:
         """Returns a list with the available device instances."""
@@ -91,3 +88,13 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
         The instance of the device driver or None in case of an error.
         """
         return None
+
+
+def get_driver_descriptor() -> DeviceDriverDescriptor:
+    """This function returns an instance of the device-specific DeviceDriverDescriptor.
+
+    Returns
+    -------
+    `AppleTvDeviceDriverDescriptor`: An instance of the DeviceDriverDescriptor.
+    """
+    return AppleTvDeviceDriverDescriptor()

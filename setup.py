@@ -14,9 +14,8 @@
    limitations under the License.
 """
 
-from setuptools import setup
-
-from pi_control_hub_driver_appletv import __version__, __author__, __author_email__
+from setuptools import setup, find_packages
+from pi_control_hub_driver_appletv import __author__, __author_email__, __version__
 
 
 setup(
@@ -27,12 +26,16 @@ setup(
     author=__author__,
     author_email=__author_email__,
     license='Apache 2.0',
-    packages=['pi_control_hub_driver_appletv'],
+    packages=find_packages(),
     install_requires=[
-        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@0.2.4#egg=pi_control_hub_driver_api',
+        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@0.3.0#egg=pi_control_hub_driver_api',
         'pyatv>=0.14.5',
     ],
-
+    entry_points={
+        "pi_control_hub_driver": [
+            "driver_descriptor = pi_control_hub_driver_appletv.device_driver:get_driver_descriptor"
+        ]
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Other Audience',
