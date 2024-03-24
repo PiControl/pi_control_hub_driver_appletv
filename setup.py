@@ -28,7 +28,7 @@ setup(
     license='Apache 2.0',
     packages=find_packages(),
     install_requires=[
-        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@0.3.0#egg=pi_control_hub_driver_api',
+        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@0.3.1#egg=pi_control_hub_driver_api',
         'pyatv>=0.14.5',
     ],
     entry_points={
