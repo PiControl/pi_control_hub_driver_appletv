@@ -40,24 +40,24 @@ from . import __version__
 nest_asyncio.apply()
 
 from .commands import TURN_OFF, TURN_ON, create_commands
-from .synchronized import synchronized
 
 
 class PyAtvStorage:
     __global_storage = None
 
     @staticmethod
-    def get_storage() -> FileStorage:
+    async def get_storage() -> FileStorage:
+        """Get the settings storage."""
         if PyAtvStorage.__global_storage is None:
             PyAtvStorage.__global_storage = FileStorage(filename=os.path.join(DeviceDriverDescriptor.get_config_path(), "appletv.conf"), loop=asyncio.get_event_loop())
-            synchronized(PyAtvStorage.__global_storage.load())
+            await PyAtvStorage.__global_storage.load()
         return PyAtvStorage.__global_storage
 
 
 class AppleTvDeviceDriver(DeviceDriver):
     """The driver that communicates with a AppleTV."""
     def __init__(self, device_info: DeviceInfo):
-        self._device_info = device_info
+        DeviceDriver.__init__(self, device_info)
         self._commands = create_commands(device_info.device_id, PyAtvStorage.get_storage())
 
     @property
@@ -70,7 +70,7 @@ class AppleTvDeviceDriver(DeviceDriver):
         """The device ID."""
         return self._device_info.device_id
 
-    def get_commands(self) -> List[DeviceCommand]:
+    async def get_commands(self) -> List[DeviceCommand]:
         """Return the commands that are supported by this device.
 
         Returns
@@ -83,7 +83,7 @@ class AppleTvDeviceDriver(DeviceDriver):
         """
         return self._commands
 
-    def get_command(self, cmd_id: int) -> DeviceCommand:
+    async def get_command(self, cmd_id: int) -> DeviceCommand:
         """Return the command with the given ID.
 
         Parameters
@@ -101,7 +101,7 @@ class AppleTvDeviceDriver(DeviceDriver):
 
         `DeviceDriverException` in case of an other error.
         """
-        result = list(filter(lambda c: c.id == cmd_id, self.get_commands()))
+        result = list(filter(lambda c: c.id == cmd_id, await self.get_commands()))
         if len(result) > 0:
             return result[0]
         raise CommandNotFoundException(self.name, cmd_id)
@@ -130,7 +130,7 @@ class AppleTvDeviceDriver(DeviceDriver):
             [TURN_ON, -1, TURN_OFF]
         ]
 
-    def execute(self, command: DeviceCommand):
+    async def execute(self, command: DeviceCommand):
         """
         Executes the given command.
 
@@ -143,10 +143,10 @@ class AppleTvDeviceDriver(DeviceDriver):
         ------
         `DeviceCommandException` in case of an error while executing the command.
         """
-        command.execute()
+        await command.execute()
 
     @property
-    def is_device_ready(self) -> bool:
+    async def is_device_ready(self) -> bool:
         """
         A flag the determines whether the device is ready.
 
@@ -172,9 +172,9 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
             "PiControl Hub driver for controling AppleTVs", # description
         )
 
-    def get_devices(self) -> List[DeviceInfo]:
+    async def get_devices(self) -> List[DeviceInfo]:
         """Returns a list with the available device instances."""
-        raw_devices = synchronized(pyatv.scan(loop=asyncio.get_event_loop()))
+        raw_devices = await pyatv.scan(loop=asyncio.get_event_loop())
         return list(
             map(
                 lambda d: DeviceInfo(name=d.name, device_id=d.identifier),
@@ -182,9 +182,10 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
                     filter(
                         lambda d: d.device_info.raw_model.startswith('AppleTV'), raw_devices))))
 
-    def get_device(self, device_id: str) -> DeviceInfo:
+    async def get_device(self, device_id: str) -> DeviceInfo:
+        """Gets the device with the given ID"""
         loop = asyncio.get_event_loop()
-        devices = synchronized(pyatv.scan(identifier=device_id, loop=loop))
+        devices = await pyatv.scan(identifier=device_id, loop=loop)
         if not devices:
             raise DeviceNotFoundException(device_id=device_id)
         return DeviceInfo(devices[0].name, devices[0].identifier)
@@ -199,7 +200,7 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
         """This flag determines whether pairing is required to communicate with this device."""
         return True
 
-    def start_pairing(self, device_info: DeviceInfo, remote_name: str) -> Tuple[str, bool]:
+    async def start_pairing(self, device_info: DeviceInfo, remote_name: str) -> Tuple[str, bool]:
         """Start the pairing process with the given device.
 
         Parameters
@@ -215,27 +216,26 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
         provides a PIN. If the device is not found (None, False) is returned.
         """
         loop = asyncio.get_event_loop()
-        devices = synchronized(pyatv.scan(identifier=device_info.device_id, loop=loop))
+        devices = await pyatv.scan(identifier=device_info.device_id, loop=loop)
         if not devices:
             return None, False
 
-        pyatv_storage = PyAtvStorage.get_storage()
+        pyatv_storage = await PyAtvStorage.get_storage()
         apple_tv_device = devices[0]
-        pairing_handler = synchronized(
-            pyatv.pair(
+        pairing_handler = await pyatv.pair(
                 config=apple_tv_device,
                 protocol=pyatv.Protocol.Companion,
                 loop=loop,
                 storage=pyatv_storage,
-                name=remote_name))
-        synchronized(pairing_handler.begin())
-        synchronized(pyatv_storage.save())
+                name=remote_name)
+        await pairing_handler.begin()
+        await pyatv_storage.save()
         pairing_request = str(uuid.uuid4())
         AppleTvDeviceDriverDescriptor.pairing_requests_cache[pairing_request] = pairing_handler
 
         return str(pairing_request), pairing_handler.device_provides_pin
 
-    def finalize_pairing(self, pairing_request: str, credentials: str, device_provides_pin: bool) -> bool:
+    async def finalize_pairing(self, pairing_request: str, credentials: str, device_provides_pin: bool) -> bool:
         """Finalize the pairing process
 
         Parameters
@@ -247,15 +247,15 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
         """
         if not pairing_request in AppleTvDeviceDriverDescriptor.pairing_requests_cache:
             raise DeviceDriverException(f"The pairing request ID '{pairing_request}' is not found.")
-        pyatv_storage = PyAtvStorage.get_storage()
+        pyatv_storage = await PyAtvStorage.get_storage()
         pairing_handler: pyatv.interface.PairingHandler = AppleTvDeviceDriverDescriptor.pairing_requests_cache[pairing_request]
         pairing_handler.pin(credentials)
-        synchronized(pairing_handler.finish())
-        synchronized(pairing_handler.close())
-        synchronized(pyatv_storage.save())
+        await pairing_handler.finish()
+        await pairing_handler.close()
+        await pyatv_storage.save()
         return pairing_handler.has_paired
 
-    def create_device_instance(self, device_id: str) -> DeviceDriver:
+    async def create_device_instance(self, device_id: str) -> DeviceDriver:
         """Create a device driver instance for the device with the given ID.
 
         Parameters

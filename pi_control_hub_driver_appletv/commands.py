@@ -22,34 +22,33 @@ import pyatv
 from pyatv.storage.file_storage import FileStorage
 
 from . import icons
-from .synchronized import synchronized
 
 
-def __execute_while_connected(device_id: str, storage: FileStorage, operation: Callable):
+async def __execute_while_connected(device_id: str, storage: FileStorage, operation: Callable):
     loop = asyncio.get_event_loop()
-    devices = synchronized(pyatv.scan(identifier=device_id, loop=loop))
+    devices = await pyatv.scan(identifier=device_id, loop=loop)
 
     if not devices:
         raise DeviceNotFoundException(device_id=device_id)
 
     apple_tv_device = devices[0]
-    atv = synchronized(pyatv.connect(apple_tv_device, loop=loop, storage=storage))
-    operation(atv)
-    synchronized(asyncio.gather(*atv.close()))
+    atv = await pyatv.connect(apple_tv_device, loop=loop, storage=storage)
+    await operation(atv)
+    await asyncio.gather(*atv.close())
 
 
-def turn_off(device_id: str, storage: FileStorage):
-    def __turn_off(atv):
-        synchronized(atv.power.turn_off())
+async def turn_off(device_id: str, storage: FileStorage):
+    async def __turn_off(atv):
+        await atv.power.turn_off()
 
-    __execute_while_connected(device_id, storage, __turn_off)
+    await __execute_while_connected(device_id, storage, __turn_off)
 
 
-def turn_on(device_id: str, storage: FileStorage):
-    def __turn_on(atv):
-        synchronized(atv.power.turn_on())
+async def turn_on(device_id: str, storage: FileStorage):
+    async def __turn_on(atv):
+        await atv.power.turn_on()
 
-    __execute_while_connected(device_id, storage, __turn_on)
+    await __execute_while_connected(device_id, storage, __turn_on)
 
 
 class AppleTvDeviceCommand(DeviceCommand):
@@ -66,7 +65,7 @@ class AppleTvDeviceCommand(DeviceCommand):
         self._device_id = device_id
         self._callback = callback
 
-    def execute(self):
+    async def execute(self):
         """
         Execute the command. This method must be implemented by the specific command.
 
@@ -74,7 +73,7 @@ class AppleTvDeviceCommand(DeviceCommand):
         ------
         `DeviceCommandException` in case of an error while executing the command.
         """
-        self._callback(self._device_id, self._storage)
+        await self._callback(self._device_id, self._storage)
 
 #### Command IDs
 TURN_ON = 1
