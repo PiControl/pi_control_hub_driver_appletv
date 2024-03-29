@@ -50,6 +50,75 @@ async def turn_on(device_id: str, storage: FileStorage):
 
     await __execute_while_connected(device_id, storage, __turn_on)
 
+def up(device_id: str, storage: FileStorage):
+    def __up(atv):
+        synchronized(atv.remote_control.up())
+
+    __execute_while_connected(device_id, storage, __up)
+
+
+def right(device_id: str, storage: FileStorage):
+    def __right(atv):
+        synchronized(atv.remote_control.right())
+
+    __execute_while_connected(device_id, storage, __right)
+
+
+def down(device_id: str, storage: FileStorage):
+    def __down(atv):
+        synchronized(atv.remote_control.down())
+
+    __execute_while_connected(device_id, storage, __down)
+
+
+def left(device_id: str, storage: FileStorage):
+    def __left(atv):
+        synchronized(atv.remote_control.left())
+
+    __execute_while_connected(device_id,storage,  __left)
+
+
+def select(device_id: str, storage: FileStorage):
+    def __select(atv):
+        synchronized(atv.remote_control.select())
+
+    __execute_while_connected(device_id, storage, __select)
+
+
+def play_pause(device_id: str, storage: FileStorage):
+    def __play_pause(atv):
+        synchronized(atv.remote_control.play_pause())
+
+    __execute_while_connected(device_id, storage, __play_pause)
+
+
+def back(device_id: str, storage: FileStorage):
+    def __back(atv):
+        synchronized(atv.remote_control.menu())
+
+    __execute_while_connected(device_id, storage, __back)
+
+
+def volume_up(device_id: str, storage: FileStorage):
+    def __volume_up(atv):
+        synchronized(atv.audio.volume_up())
+
+    __execute_while_connected(device_id, storage, __volume_up)
+
+
+def volume_down(device_id: str, storage: FileStorage):
+    def __volume_down(atv):
+        synchronized(atv.audio.volume_down())
+
+    __execute_while_connected(device_id, storage, __volume_down)
+
+
+def home(device_id: str, storage: FileStorage):
+    def __home(atv):
+        synchronized(atv.remote_control.home())
+
+    __execute_while_connected(device_id, storage, __home)
+
 
 class AppleTvDeviceCommand(DeviceCommand):
     def __init__(
@@ -78,10 +147,32 @@ class AppleTvDeviceCommand(DeviceCommand):
 #### Command IDs
 TURN_ON = 1
 TURN_OFF = 2
+UP = 3
+RIGHT = 4
+DOWN = 5
+LEFT = 6
+SELECT = 7
+PLAY_PAUSE = 8
+BACK = 9
+VOLUME_UP = 10
+VOLUME_DOWN = 11
+HOME = 12
+
 
 #### Create commands
 def create_commands(device_id: str, storage: FileStorage) -> List[DeviceCommand]:
     return [
         AppleTvDeviceCommand(TURN_ON, "On", icons.turn_on(), device_id, storage, turn_on),
         AppleTvDeviceCommand(TURN_OFF, "Off", icons.turn_off(), device_id, storage, turn_off),
+
+        AppleTvDeviceCommand(UP, "Up", icons.up(), device_id, storage, up),
+        AppleTvDeviceCommand(RIGHT, "Right", icons.right(), device_id, storage, right),
+        AppleTvDeviceCommand(DOWN, "Down", icons.down(), device_id, storage, down),
+        AppleTvDeviceCommand(LEFT, "Left", icons.left(), device_id, storage, left),
+        AppleTvDeviceCommand(SELECT, "Select", icons.ok(), device_id, storage, select),
+        AppleTvDeviceCommand(PLAY_PAUSE, "Play/Pause", icons.play_pause(), device_id, storage, play_pause),
+        AppleTvDeviceCommand(BACK, "Back", icons.back(), device_id, storage, back),
+        AppleTvDeviceCommand(VOLUME_UP, "Volume +", icons.volume_up(), device_id, storage, volume_up),
+        AppleTvDeviceCommand(VOLUME_DOWN, "Volume -", icons.volume_down(), device_id, storage, volume_down),
+        AppleTvDeviceCommand(HOME, "Home", icons.home(), device_id, storage, home),
     ]

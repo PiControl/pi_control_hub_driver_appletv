@@ -39,7 +39,7 @@ from . import __version__
 
 nest_asyncio.apply()
 
-from .commands import TURN_OFF, TURN_ON, create_commands
+from .commands import BACK, DOWN, HOME, LEFT, PLAY_PAUSE, RIGHT, SELECT, TURN_OFF, TURN_ON, UP, VOLUME_DOWN, VOLUME_UP, create_commands
 
 
 class PyAtvStorage:
@@ -115,7 +115,7 @@ class AppleTvDeviceDriver(DeviceDriver):
         -------
         A tuple with the width and height of the layout
         """
-        return 3, 1
+        return 3, 6
 
     @property
     def remote_layout(self) -> List[List[int]]:
@@ -127,7 +127,12 @@ class AppleTvDeviceDriver(DeviceDriver):
         The layout as a list of columns.
         """
         return [
-            [TURN_ON, -1, TURN_OFF]
+            [TURN_ON, -1, TURN_OFF],
+            [-1, UP, -1],
+            [LEFT, SELECT, RIGHT],
+            [-1, DOWN, -1],
+            [PLAY_PAUSE, BACK, HOME],
+            [VOLUME_DOWN, -1, VOLUME_UP],
         ]
 
     async def execute(self, command: DeviceCommand):
