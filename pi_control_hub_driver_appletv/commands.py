@@ -50,74 +50,74 @@ async def turn_on(device_id: str, storage: FileStorage):
 
     await __execute_while_connected(device_id, storage, __turn_on)
 
-def up(device_id: str, storage: FileStorage):
-    def __up(atv):
-        synchronized(atv.remote_control.up())
+async def up(device_id: str, storage: FileStorage):
+    async def __up(atv):
+        await atv.remote_control.up()
 
-    __execute_while_connected(device_id, storage, __up)
-
-
-def right(device_id: str, storage: FileStorage):
-    def __right(atv):
-        synchronized(atv.remote_control.right())
-
-    __execute_while_connected(device_id, storage, __right)
+    await __execute_while_connected(device_id, storage, __up)
 
 
-def down(device_id: str, storage: FileStorage):
-    def __down(atv):
-        synchronized(atv.remote_control.down())
+async def right(device_id: str, storage: FileStorage):
+    async def __right(atv):
+        await atv.remote_control.right()
 
-    __execute_while_connected(device_id, storage, __down)
-
-
-def left(device_id: str, storage: FileStorage):
-    def __left(atv):
-        synchronized(atv.remote_control.left())
-
-    __execute_while_connected(device_id,storage,  __left)
+    await __execute_while_connected(device_id, storage, __right)
 
 
-def select(device_id: str, storage: FileStorage):
-    def __select(atv):
-        synchronized(atv.remote_control.select())
+async def down(device_id: str, storage: FileStorage):
+    async def __down(atv):
+        await atv.remote_control.down()
 
-    __execute_while_connected(device_id, storage, __select)
-
-
-def play_pause(device_id: str, storage: FileStorage):
-    def __play_pause(atv):
-        synchronized(atv.remote_control.play_pause())
-
-    __execute_while_connected(device_id, storage, __play_pause)
+    await __execute_while_connected(device_id, storage, __down)
 
 
-def back(device_id: str, storage: FileStorage):
-    def __back(atv):
-        synchronized(atv.remote_control.menu())
+async def left(device_id: str, storage: FileStorage):
+    async def __left(atv):
+        await atv.remote_control.left()
 
-    __execute_while_connected(device_id, storage, __back)
-
-
-def volume_up(device_id: str, storage: FileStorage):
-    def __volume_up(atv):
-        synchronized(atv.audio.volume_up())
-
-    __execute_while_connected(device_id, storage, __volume_up)
+    await __execute_while_connected(device_id,storage,  __left)
 
 
-def volume_down(device_id: str, storage: FileStorage):
-    def __volume_down(atv):
-        synchronized(atv.audio.volume_down())
+async def select(device_id: str, storage: FileStorage):
+    async def __select(atv):
+        await atv.remote_control.select()
 
-    __execute_while_connected(device_id, storage, __volume_down)
+    await __execute_while_connected(device_id, storage, __select)
 
 
-def home(device_id: str, storage: FileStorage):
-    def __home(atv):
-        synchronized(atv.remote_control.home())
+async def play_pause(device_id: str, storage: FileStorage):
+    async def __play_pause(atv):
+        await atv.remote_control.play_pause()
 
-    __execute_while_connected(device_id, storage, __home)
+    await __execute_while_connected(device_id, storage, __play_pause)
+
+
+async def back(device_id: str, storage: FileStorage):
+    async def __back(atv):
+        await atv.remote_control.menu()
+
+    await __execute_while_connected(device_id, storage, __back)
+
+
+async def volume_up(device_id: str, storage: FileStorage):
+    async def __volume_up(atv):
+        await atv.audio.volume_up()
+
+    await __execute_while_connected(device_id, storage, __volume_up)
+
+
+async def volume_down(device_id: str, storage: FileStorage):
+    async def __volume_down(atv):
+        await atv.audio.volume_down()
+
+    await __execute_while_connected(device_id, storage, __volume_down)
+
+
+async def home(device_id: str, storage: FileStorage):
+    async def __home(atv):
+        await atv.remote_control.home()
+
+    await __execute_while_connected(device_id, storage, __home)
 
 
 class AppleTvDeviceCommand(DeviceCommand):
