@@ -42,6 +42,20 @@ nest_asyncio.apply()
 from .commands import BACK, DOWN, HOME, LEFT, PLAY_PAUSE, RIGHT, SELECT, TURN_OFF, TURN_ON, UP, VOLUME_DOWN, VOLUME_UP, create_commands
 
 
+def synchronized(to_await):
+    """Synchronized execution of an async function."""
+    async_response = []
+
+    async def run_and_capture_result():
+        r = await to_await
+        async_response.append(r)
+
+    loop = asyncio.get_event_loop()
+    coroutine = run_and_capture_result()
+    loop.run_until_complete(coroutine)
+    return async_response[0]
+
+
 class PyAtvStorage:
     __global_storage = None
 
@@ -58,7 +72,7 @@ class AppleTvDeviceDriver(DeviceDriver):
     """The driver that communicates with a AppleTV."""
     def __init__(self, device_info: DeviceInfo):
         DeviceDriver.__init__(self, device_info)
-        self._commands = create_commands(device_info.device_id, PyAtvStorage.get_storage())
+        self._commands = create_commands(device_info.device_id, synchronized(PyAtvStorage.get_storage()))
 
     @property
     def name(self) -> str:
@@ -272,7 +286,7 @@ class AppleTvDeviceDriverDescriptor(DeviceDriverDescriptor):
         -------
         The instance of the device driver or None in case of an error.
         """
-        return AppleTvDeviceDriver(self.get_device(device_id))
+        return AppleTvDeviceDriver(await self.get_device(device_id))
 
 
 def get_driver_descriptor() -> DeviceDriverDescriptor:
