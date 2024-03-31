@@ -31,7 +31,7 @@ setup(
         "pi_control_hub_driver_appletv.icons": ["*.png"]
     },
     install_requires=[
-        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@async#egg=pi_control_hub_driver_api',
+        'pi_control_hub_driver_api @ git+https://github.com/PiControl/pi_control_hub_driver_api.git@main#egg=pi_control_hub_driver_api',
         'nest-asyncio>=1.6.0',
         'pyatv>=0.14.5',
         'cachetools>=5.3.2',
