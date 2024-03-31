@@ -20,10 +20,9 @@ import pathlib
 __directory = pathlib.Path(__file__).parent.resolve()
 
 def __read_icon(filename: str) -> bytes:
-    f = open(os.path.join(__directory, filename), mode="rb")
-    data: bytes = f.read()
-    f.close
-    return data
+    with open(os.path.join(__directory, filename), mode="rb") as f:
+        data: bytes = f.read()
+        return data
 
 def back() -> bytes: return __read_icon("back.png")
 def down() -> bytes: return __read_icon("down.png")
