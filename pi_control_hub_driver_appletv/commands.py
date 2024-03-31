@@ -16,6 +16,7 @@
 
 import asyncio
 from typing import Callable, List
+from cachetools import TTLCache
 from pi_control_hub_driver_api import DeviceCommand
 from pi_control_hub_driver_api import DeviceNotFoundException
 import pyatv
@@ -23,15 +24,21 @@ from pyatv.storage.file_storage import FileStorage
 
 from . import icons
 
+device_cache = TTLCache(20, ttl=1200)
+
 
 async def __execute_while_connected(device_id: str, storage: FileStorage, operation: Callable):
     loop = asyncio.get_event_loop()
-    devices = await pyatv.scan(identifier=device_id, loop=loop)
-
-    if not devices:
-        raise DeviceNotFoundException(device_id=device_id)
-
-    apple_tv_device = devices[0]
+    apple_tv_device = None
+    atv = None
+    if device_id in device_cache:
+        apple_tv_device = device_cache[device_id]
+    else:
+        devices = await pyatv.scan(identifier=device_id, loop=loop)
+        if not devices:
+            raise DeviceNotFoundException(device_id=device_id)
+        apple_tv_device = devices[0]
+        device_cache[device_id] = apple_tv_device
     atv = await pyatv.connect(apple_tv_device, loop=loop, storage=storage)
     await operation(atv)
     await asyncio.gather(*atv.close())
